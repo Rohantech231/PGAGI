@@ -359,7 +359,27 @@ class TalentScoutApp:
         # Show summary of collected data
         with st.expander("📊 Review Your Information"):
             candidate_data = self.conversation_manager.state.candidate_data
-            st.json(candidate_data)
+            
+            st.subheader("Basic Information")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(f"**Full Name:** {candidate_data.get('full_name', '')}")
+                st.markdown(f"**Email:** {candidate_data.get('email', '')}")
+                st.markdown(f"**Phone:** {candidate_data.get('phone_number', '')}")
+            with col2:
+                st.markdown(f"**Experience:** {candidate_data.get('years_experience', '')} years")
+                st.markdown(f"**Location:** {candidate_data.get('current_location', '')}")
+                st.markdown(f"**Positions:** {', '.join(candidate_data.get('desired_positions', []))}")
+            
+            st.divider()
+            st.subheader("Technical Assessment")
+            if 'tech_responses' in candidate_data:
+                for tech, responses in candidate_data['tech_responses'].items():
+                    with st.expander(f"🔧 {tech}"):
+                        for i, (question, answer) in enumerate(zip(responses['questions'], responses['answers'])):
+                            st.markdown(f"**Q{i+1}:** {question}")
+                            st.markdown(f"**Answer:** {answer}")
+                            st.divider()
         
         if st.button("Start New Session"):
             # Clear session state and restart
