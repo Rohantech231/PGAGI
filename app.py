@@ -162,21 +162,24 @@ class TechQuestionGenerator:
         if self.api_key:
             openai.api_key = self.api_key
     
-    def generate_questions_for_tech(self, technology: str, experience_level: int) -> List[str]:
+    def generate_questions_for_tech(self, technology: str, experience_level: int, positions: List[str]) -> List[str]:
         """Generate technical questions for a specific technology"""
         if not self.api_key:
             return self._get_fallback_questions(technology)
         
         try:
+            position_context = f"applying for {', '.join(positions)} positions" if positions else ""
             prompt = f"""
-            Generate 3-5 technical interview questions for {technology} suitable for a candidate 
-            with approximately {experience_level} years of experience. 
+            Generate 3-5 technical interview questions for {technology} tailored for:
+            - A candidate with {experience_level} years experience
+            - {position_context}
             
             The questions should:
-            1. Assess practical knowledge and problem-solving skills
-            2. Be appropriate for the experience level
-            3. Cover different aspects of the technology (fundamentals, advanced concepts, best practices)
-            4. Be clear and concise
+            1. Be relevant to both the technology and target positions
+            2. Match the candidate's experience level
+            3. Include practical scenarios they might encounter in these roles
+            4. Test both depth of knowledge and problem-solving ability
+            5. Be unique and not overly common
             
             Return only the questions as a JSON array of strings.
             """
@@ -313,7 +316,8 @@ class TalentScoutApp:
         # Generate questions if not already generated
         if current_tech not in self.conversation_manager.state.tech_questions:
             experience = self.conversation_manager.state.candidate_data.get('years_experience', 0)
-            questions = self.question_generator.generate_questions_for_tech(current_tech, experience)
+            positions = self.conversation_manager.state.candidate_data.get('desired_positions', [])
+            questions = self.question_generator.generate_questions_for_tech(current_tech, experience, positions)
             self.conversation_manager.state.tech_questions[current_tech] = questions
         
         # Display current technology assessment
